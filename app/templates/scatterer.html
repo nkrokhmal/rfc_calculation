@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %} RFC {% endblock %}
+{% block page_content %}
+
+<div class="form form-vertical" role="form", method="POST">
+    <h1>Enter spherical scatterer parameters.</h1>
+    <form method="POST" action="/scatterer" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="row">
+            <div class="form-group col-md-12">
+              {{ wtf.form_field(form.model_name, class='form-control', placeholder='Choose') }}
+            </div>
+        </div>
+        <big> <strong> Object parameters </strong></big>
+        <br>
+        <br>
+        <div class="row">
+            <div class="form-group col-md-6">
+                {{ wtf.form_field(form.radius, class='form-control', placeholder='Radius') }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ wtf.form_field(form.longitudinal, class='form-control', placeholder='Longitudinal') }}
+            </div>
+             <div class="form-group col-md-6">
+                {{ wtf.form_field(form.transverse, class='form-control', placeholder='Transverse') }}
+            </div>
+             <div class="form-group col-md-6">
+                {{ wtf.form_field(form.density_of_scatter, class='form-control', placeholder='Density of scatter') }}
+            </div>
+        </div>
+        <big> <strong> Coordinate parameters </strong></big>
+        <br>
+        <br>
+        <div class="row" >
+            <div class="form-group col-md-6">
+                {{ wtf.form_field(form.type_value, class='form-control', placeholder='Type') }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ wtf.form_field(form.from_value, class='form-control', placeholder='To') }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ wtf.form_field(form.to_value, class='form-control', placeholder='To') }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ wtf.form_field(form.step, class='form-control', placeholder='Step') }}
+            </div>
+        </div>
+        <big> <strong> Coordinate 2 parameters </strong></big>
+        <br>
+        <br>
+        <div class="row" >
+            <div class="form-group col-md-6">
+                {{ wtf.form_field(form.type_value2, class='form-control', placeholder='Type') }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ wtf.form_field(form.from_value2, class='form-control', placeholder='To') }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ wtf.form_field(form.to_value2, class='form-control', placeholder='To') }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ wtf.form_field(form.step2, class='form-control', placeholder='Step') }}
+            </div>
+        </div>
+        {{ wtf.form_field(form.submit) }}
+    </form>
+</div>
+{% if figure1 %}
+    <div class="row" >
+         <img src= "{{ url_for('api.send_data', path=figure1)}}" style="display: block; object-fit: cover; border-radius: 0px; width: 400; height: 400;">
+    </div>
+{% endif %}
+{% if figure2 %}
+    <div class="row" >
+         <img src= "{{ url_for('api.send_data', path=figure2)}}" style="display: block; object-fit: cover; border-radius: 0px; width: 400; height: 400;">
+    </div>
+{% endif %}
+{% if figure3 %}
+    <div class="row" >
+         <img src= "{{ url_for('api.send_data', path=figure3)}}" style="display: block; object-fit: cover; border-radius: 0px; width: 400; height: 400;">
+    </div>
+{% endif %}
+
+
+{% endblock %}
