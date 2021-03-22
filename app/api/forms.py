@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileRequired, FileAllowed
-from wtforms import StringField, SubmitField, SelectField, FloatField, FileField
+from wtforms import StringField, SubmitField, SelectField, FloatField, FileField, ValidationError
 from wtforms.validators import Required, InputRequired
 
 from app import db
@@ -41,17 +41,46 @@ class ScattererForm(FlaskForm):
     transverse = FloatField("Enter transverse speed of sound, m/s", default=1080.0)
     density_of_scatter = FloatField("Enter density of scatterer, kg/m^3", default=1125.0)
 
-    type_value = StringField("Enter type of coordinates (X, Y or Z)", default='Z')
-    from_value = FloatField("Enter begin coordinate value", default=-0.02)
-    to_value = FloatField("Enter end coordinate value", default=0.02)
-    step = FloatField("Enter step value", default=0.001)
+    from_value_x = FloatField("Enter begin coordinate value", default=-0.02)
+    to_value_x = FloatField("Enter end coordinate value", default=0.02)
+    step_x = FloatField("Enter step value", default=0.001)
 
-    type_value2 = StringField("Enter type of coordinates (X, Y or Z)", default='X')
-    from_value2 = FloatField("Enter begin coordinate value", default=-0.02)
-    to_value2 = FloatField("Enter end coordinate value", default=0.02)
-    step2 = FloatField("Enter step value", default=0.001)
+    from_value_y = FloatField("Enter begin coordinate value", default=-0.02)
+    to_value_y = FloatField("Enter end coordinate value", default=0.02)
+    step_y = FloatField("Enter step value", default=0.001)
+
+    from_value_z = FloatField("Enter begin coordinate value", default=-0.02)
+    to_value_z = FloatField("Enter end coordinate value", default=0.02)
+    step_z = FloatField("Enter step value", default=0.001)
 
     submit = SubmitField(label="Submit")
+
+    def validate_to_value_x(self, field):
+        if field.data < self.from_value_x.data:
+            raise ValidationError("End coordinate value must be greater than begin coordinate value!")
+
+    def validate_to_value_y(self, field):
+        if field.data < self.from_value_y.data:
+            raise ValidationError("End coordinate value must be greater than begin coordinate value!")
+
+    def validate_to_value_z(self, field):
+        if field.data < self.from_value_z.data:
+            raise ValidationError("End coordinate value must be greater than begin coordinate value!")
+
+    def validate_step_x(self, field):
+        if self.from_value_x.data < self.to_value_x.data:
+            if field.data > self.to_value_x.data - self.from_value_x.data:
+                raise ValidationError("Step greater than difference between begin and end coordinates")
+
+    def validate_step_y(self, field):
+        if self.from_value_y.data < self.to_value_y.data:
+            if field.data > self.to_value_y.data - self.from_value_y.data:
+                raise ValidationError("Step greater than difference between begin and end coordinates")
+
+    def validate_step_z(self, field):
+        if self.from_value_z.data < self.to_value_z.data:
+            if field.data > self.to_value_z.data - self.from_value_z.data:
+                raise ValidationError("Step greater than difference between begin and end coordinates")
 
     def __init__(self, *args, **kwargs):
         super(ScattererForm, self).__init__(*args, **kwargs)

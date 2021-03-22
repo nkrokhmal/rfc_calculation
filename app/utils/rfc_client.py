@@ -1,13 +1,12 @@
 import math
 import scipy
 import scipy.special as special
-import matplotlib.pyplot as plt
-import numpy as np
 from os.path import join as pjoin
 import scipy.io as sio
-from scipy.fftpack import fftn, ifftn
-import matplotlib.animation as animation
-
+from scipy.fftpack import fftn
+import plotly.graph_objs as go
+import numpy as np
+from plotly.subplots import make_subplots
 from scipy.special import factorial
 
 
@@ -75,10 +74,6 @@ class Points:
         points = np.array(
             [[x, y, z] for x in self.coordinates.x for y in self.coordinates.y for z in self.coordinates.z])
         return points
-
-    def calculate_force(self):
-        force = np.zeros((c.N_points, 3)) * 1.0
-        return force
 
     def init_dif_bessel_kla(self):
         self.dif_bessel_kla = self.n * (0. + 1j * 0.)
@@ -162,13 +157,7 @@ class Points:
         lin_l = lin_l[:, np.newaxis]
         lin_m = lin_l.T
         lin_lm = lin_l @ lin_m
-        #   self.angle_spectrum = 1/self.spectrum.Nx**2*angle_spectrum_0 * lin_lm *(4*np.pi**2)
-
-        self.angle_spectrum = angle_spectrum_0.conj() * lin_lm * (4 * np.pi ** 2) / self.spectrum.Nx ** 2  #### pi^2???
-
-    #         scipy.io.savemat('ang_spec.mat', {'mydata': self.angle_spectrum})
-
-    #         self.angle_spectrum[19,13]=4*np.pi**2
+        self.angle_spectrum = angle_spectrum_0.conj() * lin_lm * (4 * np.pi ** 2) / self.spectrum.Nx ** 2
 
     '''to do: split arrays and angles'''
 
@@ -185,8 +174,8 @@ class Points:
         #         self.r_array[0,0] = 1e-12
 
         self.spectrum.dk = 2 * math.pi / (self.spectrum.dx * (self.spectrum.Nx - 1))
-        self.kx_array = self.spectrum.dk / self.spectrum.dx * x_array.copy() - self.spectrum.dk
-        self.ky_array = self.spectrum.dk / self.spectrum.dx * y_array.copy() - self.spectrum.dk
+        self.kx_array = self.spectrum.dk / self.spectrum.dx * x_array.copy() - 0 * self.spectrum.dk
+        self.ky_array = self.spectrum.dk / self.spectrum.dx * y_array.copy() - 0 * self.spectrum.dk
         self.kr_array = np.sqrt(self.kx_array ** 2 + self.ky_array ** 2)
         self.k_window = 0.5 * (np.sign(self.wave.k - self.kr_array) + 1)
 
@@ -311,106 +300,191 @@ class Points:
             force_z = -2 * coef * force_z.real
             fz_sum = - np.real(2 * coef * f_nz.copy())
 
-            force[glob_n] = [force_x, force_y, force_z] / self.power * self.wave.c
-        return force  # , scat_p
+            force[glob_n] = [force_y, force_x, force_z] / self.power * self.wave.c
+        return force
 
-    def build_rad_force(self, force):
+    def build_rad_force_old(self, force):
         Fx = np.reshape(force[:, 0], [self.coordinates.nx, self.coordinates.ny, self.coordinates.nz])
         Fy = np.reshape(force[:, 1], [self.coordinates.nx, self.coordinates.ny, self.coordinates.nz])
         Fz = np.reshape(force[:, 2], [self.coordinates.nx, self.coordinates.ny, self.coordinates.nz])
 
+        x_coord = np.reshape(self.points[:, 0], [self.coordinates.nx, self.coordinates.ny, self.coordinates.nz])
+        y_coord = np.reshape(self.points[:, 1], [self.coordinates.nx, self.coordinates.ny, self.coordinates.nz])
+        z_coord = np.reshape(self.points[:, 2], [self.coordinates.nx, self.coordinates.ny, self.coordinates.nz])
+
+        x_grid = np.array(x_coord[:, 0, 0])
+        y_grid = np.array(y_coord[0, :, 0])
+        z_grid = np.array(z_coord[0, 0, :])
         if (self.coordinates.nx > 1) and (self.coordinates.nz > 1) and (self.coordinates.ny == 1):
             print('xz')
-            fig, ax = plt.subplots()
-            extent = [1e3 * min(self.coordinates.z), 1e3 * max(self.coordinates.z), 1e3 * min(self.coordinates.x),
-                      1e3 * max(self.coordinates.x)]
-            im1 = ax.matshow(Fx[:, 0, :], extent=extent, aspect='auto')
-            plt.colorbar(im1)
-            ax.xaxis.tick_bottom()
-            ax.set_xlabel('z, mm')
-            ax.set_ylabel('x, mm')
-            ax.set_title('Fx component of radiation force on xz-plane')
-            fig2, ax = plt.subplots()
-            im2 = ax.matshow(Fy[:, 0, :], extent=extent, aspect='auto')
-            plt.colorbar(im2)
-            ax.xaxis.tick_bottom()
-            ax.set_xlabel('z, mm')
-            ax.set_ylabel('x, mm')
-            ax.set_title('Fy component of radiation force on xz-plane')
-            fig3, ax = plt.subplots()
-            im3 = ax.matshow(Fz[:, 0, :], extent=extent, aspect='auto')
-            plt.colorbar(im3)
-            ax.xaxis.tick_bottom()
-            ax.set_xlabel('z, mm')
-            ax.set_ylabel('x, mm')
-            ax.set_title('Fz component of radiation force on xz-plane')
+            fig = make_subplots(rows=1, cols=3, subplot_titles=('Fx', 'Fy', 'Fz'),
+                                x_title="z, mm", y_title="x, mm", horizontal_spacing=0.16
+                                )
+            fig.add_trace(go.Contour(
+                z=Fx[:, 0, :],
+                x=z_grid * 1e3,
+                y=x_grid * 1e3,
+                line=dict(smoothing=0.85),
+                colorscale='Viridis',
+                contours_coloring='heatmap',
+                colorbar=dict(len=1, x=0.24),
+                zmin=np.min(np.min(Fx[:, 0, :], 0)), zmax=np.max(np.max(Fx[:, 0, :], 0))
+
+            ), 1, 1)
+            fig.add_trace(go.Contour(
+                z=Fy[:, 0, :],
+                x=z_grid * 1e3,
+                y=x_grid * 1e3,
+                line=dict(smoothing=0.85),
+                colorscale='Viridis',
+                contours_coloring='heatmap',
+                colorbar=dict(len=1, x=0.62),
+                zmin=np.min(np.min(Fy[:, 0, :], 0)), zmax=np.max(np.max(Fy[:, 0, :], 0))
+
+            ), 1, 2)
+            fig.add_trace(go.Contour(
+                z=Fz[:, 0, :],
+                x=z_grid * 1e3,
+                y=x_grid * 1e3,
+                colorscale='Viridis',
+                contours_coloring='heatmap',
+                colorbar=dict(len=1, x=1),
+                zmin=np.min(np.min(Fz[:, 0, :], 0)), zmax=np.max(np.max(Fz[:, 0, :], 0))
+
+            ), 1, 3)
+
+            fig.update_layout(height=400,
+                              width=1100)
+            fig.show()
+            fig2 = None
+            fig3 = None
+
+            Z, X = np.meshgrid(z_grid, x_grid)
+            Fxz = np.abs(Fx ** 2 + Fz ** 2) ** 0.5
+            fig0, ax0 = plt.subplots()
+            strm = ax0.streamplot(Z * 1e3, X * 1e3, Fz[:, 0, :], Fx[:, 0, :], density=1, color=Fxz[:, 0, :],
+                                  linewidth=1, cmap=plt.cm.viridis)
+            fig0.colorbar(strm.lines)
+            ax0.set_xlabel('z, mm')
+            ax0.set_ylabel('x, mm')
+            ax0.set_title('Streamline on xz-plane')
+            fig0.set_size_inches(10, 5)
 
         elif (self.coordinates.ny > 1) and (self.coordinates.nz > 1) and (self.coordinates.nx == 1):
             print('yz')
-            fig, ax = plt.subplots()
-            extent = [1e3 * min(self.coordinates.z), 1e3 * max(self.coordinates.z), 1e3 * min(self.coordinates.y),
-                      1e3 * max(self.coordinates.y)]
-            im1 = ax.matshow(Fx[0, :, :], extent=extent, aspect='auto')
-            plt.colorbar(im1)
-            ax.xaxis.tick_bottom()
-            ax.set_xlabel('z, mm')
-            ax.set_ylabel('y, mm')
-            ax.set_title('Fx component of radiation force on yz-plane')
-            fig2, ax = plt.subplots()
-            im2 = ax.matshow(Fy[0, :, :], extent=extent, aspect='auto')
-            plt.colorbar(im2)
-            ax.xaxis.tick_bottom()
-            ax.set_xlabel('z, mm')
-            ax.set_ylabel('y, mm')
-            ax.set_title('Fy component of radiation force on yz-plane')
-            fig3, ax = plt.subplots()
-            im3 = ax.matshow(Fz[0, :, :], extent=extent, aspect='auto')
-            plt.colorbar(im3)
-            ax.xaxis.tick_bottom()
-            ax.set_xlabel('z, mm')
-            ax.set_ylabel('y, mm')
-            ax.set_title('Fz component of radiation force on yz-plane')
+            Z, Y = np.meshgrid(z_grid, y_grid)
+            Fyz = np.abs(Fy ** 2 + Fz ** 2) ** 0.5
+            fig0, ax0 = plt.subplots()
+            strm = ax0.streamplot(Z * 1e3, Y * 1e3, Fz[0, :, :], Fy[0, :, :], density=1, color=Fyz[0, :, :],
+                                  linewidth=1, cmap=plt.cm.viridis)
+            fig0.colorbar(strm.lines)
+            ax0.set_xlabel('z, mm')
+            ax0.set_ylabel('y, mm')
+            ax0.set_title('Streamline on yz-plane')
+            fig0.set_size_inches(10, 5)
+
+            fig = make_subplots(rows=1, cols=3, subplot_titles=('Fx', 'Fy', 'Fz'),
+                                x_title="z, mm", y_title="y, mm", horizontal_spacing=0.16
+                                )
+            fig.add_trace(go.Contour(
+                z=Fx[0, :, :],
+                x=z_grid * 1e3,
+                y=y_grid * 1e3,
+                line=dict(smoothing=0.85),
+                colorscale='Viridis',
+                contours_coloring='heatmap',
+                colorbar=dict(len=1, x=0.24),
+                zmin=np.min(np.min(Fx[0, :, :], 0)), zmax=np.max(np.max(Fx[0, :, :], 0))
+
+            ), 1, 1)
+            fig.add_trace(go.Contour(
+                z=Fy[0, :, :],
+                x=z_grid * 1e3,
+                y=y_grid * 1e3,
+                line=dict(smoothing=0.85),
+                colorscale='Viridis',
+                contours_coloring='heatmap',
+                colorbar=dict(len=1, x=0.62),
+                zmin=np.min(np.min(Fy[0, :, :], 0)), zmax=np.max(np.max(Fy[0, :, :], 0))
+
+            ), 1, 2)
+            fig.add_trace(go.Contour(
+                z=Fz[0, :, :],
+                x=z_grid * 1e3,
+                y=x_grid * 1e3,
+                colorscale='Viridis',
+                contours_coloring='heatmap',
+                colorbar=dict(len=1, x=1),
+                zmin=np.min(np.min(Fz[0, :, :], 0)), zmax=np.max(np.max(Fz[0, :, :], 0))
+
+            ), 1, 3)
+
+            fig.update_layout(height=400,
+                              width=1100)
+            fig.show()
+            fig2 = None
+            fig3 = None
+
         elif (self.coordinates.nx > 1) and (self.coordinates.ny > 1) and (self.coordinates.nz == 1):
             print('xy')
-            fig, ax = plt.subplots()
-            extent = [1e3 * min(self.coordinates.x), 1e3 * max(self.coordinates.x), 1e3 * min(self.coordinates.y),
-                      1e3 * max(self.coordinates.y)]
-            im1 = ax.matshow(Fx[:, :, 0], extent=extent, aspect='auto')
-            plt.colorbar(im1)
-            ax.xaxis.tick_bottom()
-            ax.set_xlabel('x, mm')
-            ax.set_ylabel('y, mm')
-            ax.set_title('Fx component of radiation force on xy-plane')
-            fig2, ax = plt.subplots()
-            im2 = ax.matshow(Fy[:, :, 0], extent=extent, aspect='auto')
-            plt.colorbar(im2)
-            ax.xaxis.tick_bottom()
-            ax.set_xlabel('x, mm')
-            ax.set_ylabel('y, mm')
-            ax.set_title('Fy component of radiation force on xy-plane')
-            fig3, ax = plt.subplots()
-            im3 = ax.matshow(Fz[:, :, 0], extent=extent, aspect='auto')
-            plt.colorbar(im3)
-            ax.xaxis.tick_bottom()
-            ax.set_xlabel('x, mm')
-            ax.set_ylabel('y, mm')
-            ax.set_title('Fz component of radiation force on xy-plane')
-
-            Y, X = 1e3 * self.spectrum.dx * np.mgrid[-self.coordinates.nx / 2:self.coordinates.nx / 2,
-                                            -self.coordinates.ny / 2:self.coordinates.ny / 2]
-            Fxy = np.abs(Fx ** 2 + Fy ** 2) ** 0.5
+            Y, X = np.meshgrid(y_grid, x_grid)
+            Fxy = np.abs(Fx ** 2 + Fz ** 2) ** 0.5
             fig0, ax0 = plt.subplots()
-            strm = ax0.streamplot(X, Y, Fx[:, :, 0], Fy[:, :, 0], density=2, color=Fxy[:, :, 0], linewidth=1,
-                                  cmap=plt.cm.viridis)
+            strm = ax0.streamplot(Y * 1e3, X * 1e3, Fy[:, :, 0], Fx[:, :, 0], density=1, color=Fxy[:, :, 0],
+                                  linewidth=1, cmap=plt.cm.viridis)
             fig0.colorbar(strm.lines)
-            ax0.set_xlabel('x, mm')
-            ax0.set_ylabel('y, mm')
-            ax0.set_title('Radiation force direction on xy-plane')
+            ax0.set_xlabel('y, mm')
+            ax0.set_ylabel('x, mm')
+            ax0.set_title('Streamline on xy-plane')
+            fig0.set_size_inches(7, 5)
+
+            fig = make_subplots(rows=1, cols=3, subplot_titles=('Fx', 'Fy', 'Fz'),
+                                x_title="y, mm", y_title="x, mm", horizontal_spacing=0.16
+                                )
+            fig.add_trace(go.Contour(
+                z=Fx[:, :, 0],
+                x=y_grid * 1e3,
+                y=x_grid * 1e3,
+                line=dict(smoothing=0.85),
+                colorscale='Viridis',
+                contours_coloring='heatmap',
+                colorbar=dict(len=1, x=0.24),
+                zmin=np.min(np.min(Fx[:, :, 0], 0)), zmax=np.max(np.max(Fx[:, :, 0], 0))
+
+            ), 1, 1)
+            fig.add_trace(go.Contour(
+                z=Fy[:, :, 0],
+                x=y_grid * 1e3,
+                y=x_grid * 1e3,
+                line=dict(smoothing=0.85),
+                colorscale='Viridis',
+                contours_coloring='heatmap',
+                colorbar=dict(len=1, x=0.62),
+                zmin=np.min(np.min(Fy[:, :, 0], 0)), zmax=np.max(np.max(Fy[:, :, 0], 0))
+
+            ), 1, 2)
+            fig.add_trace(go.Contour(
+                z=Fz[:, :, 0],
+                x=y_grid * 1e3,
+                y=x_grid * 1e3,
+                colorscale='Viridis',
+                contours_coloring='heatmap',
+                colorbar=dict(len=1, x=1),
+                zmin=np.min(np.min(Fz[:, :, 0], 0)), zmax=np.max(np.max(Fz[:, :, 0], 0))
+
+            ), 1, 3)
+
+            fig.update_layout(height=400,
+                              width=1100)
+            fig.show()
+            fig2 = None
+            fig3 = None
 
         elif (self.coordinates.nx == 1) and (self.coordinates.ny == 1) and (self.coordinates.nz > 1):
             fig, ax = plt.subplots(figsize=(10, 5))
             fig2 = None
             fig3 = None
+            fig0 = None
             ax.plot(self.points[:, 2] * 1000, force[:, 0])
             ax.plot(self.points[:, 2] * 1000, force[:, 1])
             ax.plot(self.points[:, 2] * 1000, force[:, 2])
@@ -422,6 +496,7 @@ class Points:
             fig, ax = plt.subplots(figsize=(10, 5))
             fig2 = None
             fig3 = None
+            fig0 = None
             ax.plot(self.points[:, 1] * 1000, force[:, 0])
             ax.plot(self.points[:, 1] * 1000, force[:, 1])
             ax.plot(self.points[:, 1] * 1000, force[:, 2])
@@ -433,6 +508,7 @@ class Points:
             fig, ax = plt.subplots(figsize=(10, 5))
             fig2 = None
             fig3 = None
+            fig0 = None
             ax.plot(self.points[:, 0] * 1000, force[:, 0])
             ax.plot(self.points[:, 0] * 1000, force[:, 1])
             ax.plot(self.points[:, 0] * 1000, force[:, 2])
@@ -440,4 +516,481 @@ class Points:
             ax.set_xlabel('x, mm')
             ax.set_ylabel('Radiation force, N')
             ax.set_title('Radiation force on x-axis')
-        return fig, fig2, fig3
+        elif (self.coordinates.nx > 1) and (self.coordinates.ny > 1) and (self.coordinates.nz > 1):
+            num_steps = len(Fx[0, 0, :])
+            fig = go.Figure(go.Contour(z=Fx[:, :, 0],
+                                       x=x_grid * 1e3,
+                                       y=y_grid * 1e3,
+                                       colorscale='Viridis'
+                                       )
+                            )
+
+            for i in range(1, num_steps):
+                fig.add_contour(z=Fx[:, :, i],
+                                x=x_grid * 1e3,
+                                y=y_grid * 1e3,
+                                visible=False,
+                                colorscale='Viridis',
+                                contours_coloring='heatmap')
+
+            steps = []
+            for i in range(num_steps):
+                step = dict(
+                    label=str(np.around(1e3 * z_grid[i], 2)) + 'mm',
+                    method='restyle',
+                    args=['visible', [False] * num_steps],
+                )
+                step['args'][1][i] = True
+                steps.append(step)
+
+            sliders = [dict(
+                steps=steps,
+            )]
+
+            fig.layout.sliders = sliders
+
+            fig.update_layout(title_text="Fx component of radiation force along z-axis",
+                              legend_orientation="h",
+                              xaxis_title="y, mm",
+                              yaxis_title="x, mm",
+                              autosize=False,
+                              height=600,
+                              width=600
+                              )
+            fig.show()
+            fig2 = None
+            fig3 = None
+            fig0 = None
+
+        return fig, fig2, fig3, fig0
+
+    def build_rad_force(self, force):
+        Fx = np.reshape(force[:, 0], [self.coordinates.nx, self.coordinates.ny, self.coordinates.nz])
+        Fy = np.reshape(force[:, 1], [self.coordinates.nx, self.coordinates.ny, self.coordinates.nz])
+        Fz = np.reshape(force[:, 2], [self.coordinates.nx, self.coordinates.ny, self.coordinates.nz])
+
+        x_coord = np.reshape(self.points[:, 0], [self.coordinates.nx, self.coordinates.ny, self.coordinates.nz])
+        y_coord = np.reshape(self.points[:, 1], [self.coordinates.nx, self.coordinates.ny, self.coordinates.nz])
+        z_coord = np.reshape(self.points[:, 2], [self.coordinates.nx, self.coordinates.ny, self.coordinates.nz])
+
+        x_grid = np.array(x_coord[:, 0, 0]) * 1e3
+        y_grid = np.array(y_coord[0, :, 0]) * 1e3
+        z_grid = np.array(z_coord[0, 0, :]) * 1e3
+
+        if (self.coordinates.nx > 1) and (self.coordinates.nz > 1) and (self.coordinates.ny == 1):
+            type_field = 'xz'
+            type_plot = '2d'
+            Fx = Fx[:, 0, :]
+            Fy = Fy[:, 0, :]
+            Fz = Fz[:, 0, :]
+            x_axis = z_grid
+            y_axis = x_grid
+        elif (self.coordinates.ny > 1) and (self.coordinates.nz > 1) and (self.coordinates.nx == 1):
+            type_field = 'yz'
+            type_plot = '2d'
+            Fx = Fx[0, :, :]
+            Fy = Fy[0, :, :]
+            Fz = Fz[0, :, :]
+            x_axis = z_grid
+            y_axis = y_grid
+        elif (self.coordinates.nx > 1) and (self.coordinates.ny > 1) and (self.coordinates.nz == 1):
+            type_field = 'xy'
+            type_plot = '2d'
+            Fx = Fx[:, :, 0]
+            Fy = Fy[:, :, 0]
+            Fz = Fz[:, :, 0]
+            x_axis = y_grid
+            y_axis = x_grid
+        elif (self.coordinates.ny > 1) and (self.coordinates.nz > 1) and (self.coordinates.nx > 1):
+            type_field = 'xyz'
+            type_plot = '3d'
+            x_axis = y_grid
+            y_axis = x_grid
+        elif (self.coordinates.nx > 1) and (self.coordinates.ny == 1) and (self.coordinates.nz == 1):
+            type_field = 'x'
+            type_plot = '1d'
+            Fx = Fx[:, 0, 0]
+            Fy = Fy[:, 0, 0]
+            Fz = Fz[:, 0, 0]
+            x_axis = x_grid
+        elif (self.coordinates.ny > 1) and (self.coordinates.nx == 1) and (self.coordinates.nz == 1):
+            type_field = 'y'
+            type_plot = '1d'
+            Fx = Fx[0, :, 0]
+            Fy = Fy[0, :, 0]
+            Fz = Fz[0, :, 0]
+            x_axis = y_grid
+        elif (self.coordinates.nz > 1) and (self.coordinates.ny == 1) and (self.coordinates.nx == 1):
+            type_field = 'z'
+            type_plot = '1d'
+            Fx = Fx[0, 0, :]
+            Fy = Fy[0, 0, :]
+            Fz = Fz[0, 0, :]
+            x_axis = z_grid
+        # create figure
+
+        if type_plot == '2d':
+            fig = go.Figure()
+            fig = make_subplots(rows=1, cols=2, subplot_titles=("Select properties:", " "), column_widths=[0.3, 0.6])
+            # Add surface trace
+            button_layer_1_height = 0.9
+            button_layer_2_height = 0.8
+            button_layer_3_height = 0.7
+            button_x_1 = 0.055
+            button_x_2 = 0.055
+            button_x_3 = 0.055
+
+            fig.add_trace(go.Contour(z=Fx,
+                                     x=x_axis,
+                                     y=y_axis,
+                                     colorscale='Viridis',
+                                     contours_coloring='heatmap',
+                                     zmin=np.min(np.min(Fx, 0)),
+                                     zmax=np.max(np.max(Fx, 0)),
+                                     visible=True,
+                                     name='Fx'
+                                     ), 1, 2)
+            fig.add_trace(go.Contour(z=Fy,
+                                     x=x_axis,
+                                     y=y_axis,
+                                     colorscale='Viridis',
+                                     contours_coloring='heatmap',
+                                     zmin=np.min(np.min(Fy, 0)),
+                                     zmax=np.max(np.max(Fy, 0)),
+                                     visible=False,
+                                     name='Fy'
+                                     ), 1, 2)
+            fig.add_trace(go.Contour(z=Fz,
+                                     x=x_axis,
+                                     y=y_axis,
+                                     colorscale='Viridis',
+                                     contours_coloring='heatmap',
+                                     zmin=np.min(np.min(Fz, 0)),
+                                     zmax=np.max(np.max(Fz, 0)),
+                                     visible=False,
+                                     name='Fx'
+                                     ), 1, 2)
+            fig.add_trace(go.Contour(z=(Fx ** 2 + Fy ** 2 + Fz ** 2) ** 0.5,
+                                     x=x_axis,
+                                     y=y_axis,
+                                     colorscale='Viridis',
+                                     contours_coloring='heatmap',
+                                     zmin=np.min(np.min((Fx ** 2 + Fy ** 2 + Fz ** 2) ** 0.5, 0)),
+                                     zmax=np.max(np.max((Fx ** 2 + Fy ** 2 + Fz ** 2) ** 0.5, 0)),
+                                     visible=False,
+                                     name='abs(F)'
+                                     ), 1, 2)
+            # Update plot sizing
+            fig.update_layout(
+                # width=1000,
+                height=600,
+                autosize=True,
+                # margin=dict(t=0, b=0, l=0, r=0),
+                template="plotly_white",
+            )
+            # Add dropdown
+            fig.update_layout(
+                updatemenus=[
+                    dict(
+                        buttons=list([
+                            dict(
+                                args=["type", "contour"],
+                                label="Contour",
+                                method="restyle"
+                            ),
+                            dict(
+                                args=["type", "heatmap"],
+                                label="Heatmap",
+                                method="restyle"
+                            )
+                        ]),
+                        direction="down",
+                        pad={"r": 10, "t": 10},
+                        showactive=True,
+                        x=button_x_1,
+                        xanchor="left",
+                        y=button_layer_1_height,
+                        yanchor="top"
+                    ),
+                    dict(
+                        buttons=list([
+                            dict(
+                                args=["colorscale", "Viridis"],
+                                label="Viridis",
+                                method="restyle"
+                            ),
+                            dict(
+                                args=["colorscale", "Jet"],
+                                label="Jet",
+                                method="restyle"
+                            ),
+                            dict(
+                                args=["colorscale", "Hot"],
+                                label="Hot",
+                                method="restyle"
+                            ),
+                            dict(
+                                args=["colorscale", "Tropic"],
+                                label="Spectral",
+                                method="restyle"
+                            )
+                        ]),
+                        direction="down",
+                        pad={"r": 10, "t": 10},
+                        showactive=True,
+                        x=button_x_2,
+                        xanchor="left",
+                        y=button_layer_2_height,
+                        yanchor="top"
+                    ),
+                    dict(
+                        active=0,
+                        buttons=list([
+                            dict(label="Fx",
+                                 method="update",
+                                 args=[{"visible": [True, False, False, False]},
+                                       {"title": "Fx component of radiation force on  " + type_field + "-plane"}]),
+                            dict(label="Fy",
+                                 method="update",
+                                 args=[{"visible": [False, True, False, False]},
+                                       {"title": "Fy component of radiation force on  " + type_field + "-plane"}]),
+                            dict(label="Fz",
+                                 method="update",
+                                 args=[{"visible": [False, False, True, False]},
+                                       {"title": "Fz component of radiation force on  " + type_field + "-plane"}]),
+                            dict(label="abs(F)",
+                                 method="update",
+                                 args=[{"visible": [False, False, False, True]},
+                                       {"title": "Radiation force module on  " + type_field + "-plane"}])]),
+                        direction="down",
+                        pad={"r": 10, "t": 10},
+                        showactive=True,
+                        x=button_x_3,
+                        xanchor="left",
+                        y=button_layer_3_height,
+                        yanchor="top"
+                    )
+                ]
+            )
+            # #Add annotation
+            # fig.update_layout(
+            #     annotations=[
+            #         dict(text="Displayed variable:", showarrow=False,
+            #              xref="paper", x=0, y=button_layer_3_height-0.03,
+            #              yref="paper", align="right"),
+            #         dict(text="Trace type:", showarrow=False,xref="paper",
+            #              x=0.0, y=button_layer_1_height-0.03, yref="paper",
+            #              align="right"),
+            #         dict(text="Colorscale:", x=0, xref="paper",
+            #              y=button_layer_2_height-0.03, yref="paper",
+            #              align="right", showarrow=False)
+            #     ]
+            # )
+            fig.update_xaxes(title_text=type_field[1] + "-axis, mm", row=1, col=2)
+            fig.update_yaxes(title_text=type_field[0] + "-axis, mm", row=1, col=2)
+
+        elif type_plot == '1d':
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=x_axis, y=Fx, name="Fx",
+                                     line_shape='spline'))
+            fig.add_trace(go.Scatter(x=x_axis, y=Fy, name="Fy",
+                                     line_shape='spline'))
+            fig.add_trace(go.Scatter(x=x_axis, y=Fz, name="Fz",
+                                     line_shape='spline'))
+
+            fig.update_traces(hoverinfo='text+name', mode='lines+markers')
+            fig.update_layout(legend=dict(y=0.5, traceorder='reversed', font_size=16))
+            fig.update_layout(title='Component of normalised radiation force on ' + type_field[0] + '-axis, mm',
+                              xaxis_title=type_field[0] + '-axis, mm',
+                              yaxis_title='F, c/W[N]')
+
+        elif type_plot == '3d':
+            num_steps = len(Fx[0, 0, :])
+            abs_F = (Fx[:, :, :] ** 2 + Fy[:, :, :] ** 2 + Fz[:, :, :] ** 2) ** 0.5
+            button_layer_1_height = 0.9
+            button_layer_2_height = 0.8
+            button_layer_3_height = 0.7
+            button_x_1 = -0.2
+            button_x_2 = -0.2
+            button_x_3 = -0.2
+            # fig = make_subplots(rows=1, cols = 2, subplot_titles=("Select properties:", " "), column_widths=[0.3, 0.6])
+
+            # fig.add_trace(go.Contour(z = Fx[:,:,0],
+            fig = go.Figure(
+                data=[go.Contour(z=Fx[:, :, 0],
+                                 x=x_grid,
+                                 y=y_grid,
+                                 visible=True,
+                                 name='Fx',
+                                 colorscale='Viridis'),
+                      go.Contour(z=Fy[:, :, 0],
+                                 x=x_grid,
+                                 y=y_grid,
+                                 visible=False,
+                                 name='Fy',
+                                 colorscale='Viridis'),
+                      go.Contour(z=Fz[:, :, 0],
+                                 x=x_grid,
+                                 y=y_grid,
+                                 visible=False,
+                                 name='Fz',
+                                 colorscale='Viridis'),
+                      go.Contour(z=abs_F[:, :, 0],
+                                 x=x_grid,
+                                 y=y_grid,
+                                 visible=False,
+                                 name='abs(F)',
+                                 colorscale='Viridis')
+                      ],
+                layout=go.Layout(height=600,  # width=600,
+                                 title="Moving Frenet Frame Along a Planar Curve",
+                                 hovermode="closest",
+                                 updatemenus=[dict(type="buttons",
+                                                   buttons=[dict(label="Play",
+                                                                 method="animate",
+                                                                 args=[None])])
+                                              ]),
+
+                frames=[go.Frame(
+                    data=[go.Contour(z=Fx[:, :, k]),
+                          go.Contour(z=Fy[:, :, k]),
+                          go.Contour(z=Fz[:, :, k]),
+                          go.Contour(z=abs_F[:, :, k])
+                          ]) for k in range(num_steps)]
+            )
+
+            def frame_args(N):
+                return {
+                    "frame": {"N": N},
+                    "mode": "immediate",
+                    "fromcurrent": True,
+                    "transition": {"N": N, "easing": "linear"},
+                }
+
+            sliders = [
+                {
+                    "pad": {"b": 10, "t": 60},
+                    "len": 0.9,
+                    "x": 0.1,
+                    "y": 0,
+                    "steps": [
+                        {
+                            "args": [[f.name], frame_args(0)],
+                            "label": str(k),
+                            "method": "animate",
+                        }
+                        for k, f in enumerate(fig.frames)
+                    ],
+                }
+            ]
+            # Add dropdown
+            fig.update_layout(
+                sliders=sliders,
+                updatemenus=[
+                    dict(
+                        buttons=list([
+                            dict(
+                                args=["type", "contour"],
+                                label="Contour",
+                                method="restyle"
+                            ),
+                            dict(
+                                args=["type", "heatmap"],
+                                label="Heatmap",
+                                method="restyle"
+                            )
+                        ]),
+                        direction="down",
+                        pad={"r": 10, "t": 10},
+                        showactive=True,
+                        x=button_x_1,
+                        xanchor="left",
+                        y=button_layer_1_height,
+                        yanchor="top"
+                    ),
+                    dict(
+                        buttons=list([
+                            dict(
+                                args=["colorscale", "Viridis"],
+                                label="Viridis",
+                                method="restyle"
+                            ),
+                            dict(
+                                args=["colorscale", "Jet"],
+                                label="Jet",
+                                method="restyle"
+                            ),
+                            dict(
+                                args=["colorscale", "Hot"],
+                                label="Hot",
+                                method="restyle"
+                            ),
+                            dict(
+                                args=["colorscale", "Tropic"],
+                                label="Spectral",
+                                method="restyle"
+                            )
+                        ]),
+                        direction="down",
+                        pad={"r": 10, "t": 10},
+                        showactive=True,
+                        x=button_x_2,
+                        xanchor="left",
+                        y=button_layer_2_height,
+                        yanchor="top"
+                    ),
+                    dict(
+                        active=0,
+                        buttons=list([
+                            dict(label="Fx",
+                                 method="update",
+                                 args=[{"visible": [True, False, False, False]},
+                                       {"title": "Fx component of radiation force on  " + type_field + "-plane"}]),
+                            dict(label="Fy",
+                                 method="update",
+                                 args=[{"visible": [False, True, False, False]},
+                                       {"title": "Fy component of radiation force on  " + type_field + "-plane"}]),
+                            dict(label="Fz",
+                                 method="update",
+                                 args=[{"visible": [False, False, True, False]},
+                                       {"title": "Fz component of radiation force on  " + type_field + "-plane"}]),
+                            dict(label="abs(F)",
+                                 method="update",
+                                 args=[{"visible": [False, False, False, True]},
+                                       {"title": "Radiation force module on  " + type_field + "-plane"}])]),
+                        direction="down",
+                        pad={"r": 10, "t": 10},
+                        showactive=True,
+                        x=button_x_3,
+                        xanchor="left",
+                        y=button_layer_3_height,
+                        yanchor="top"
+                    )
+                ]
+            )
+            # def frame_args(duration):
+            #   return {
+            #           "frame": {"duration": duration},
+            #           "mode": "immediate",
+            #           "fromcurrent": True,
+            #           "transition": {"duration": duration, "easing": "linear"},
+            #       }
+            # sliders = [
+            #             {
+            #                 # "pad": {"b": 10, "t": 60},
+            #                 # "len": 0.9,
+            #                 # "x": 0.1,
+            #                 # "y": 0,
+            #                 "steps": [
+            #                     {
+            #                         "args": [[f.name], frame_args(0)],
+            #                         "label": str(k),
+            #                         "method": "animate",
+            #                     }
+            #                     for k, f in enumerate(fig.frames)
+            #                 ],
+            #             }
+            #         ]
+            fig.layout.sliders = sliders
+        # fig.show()
+        return fig

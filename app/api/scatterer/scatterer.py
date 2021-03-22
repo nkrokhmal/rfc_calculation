@@ -8,10 +8,15 @@ import json
 from ...utils.rfc_client import Object, Wave, Coordinates, Spectrum, Points
 import numpy as np
 import time
+import plotly
 
 
 def get_choice_data(f):
     return dict(f.choices).get(f.data)
+
+
+def create_arrange_with_endpoint(beg, end, step):
+    return np.arange(beg, end + step, step)
 
 
 @api.route("/scatterer", methods=['GET', 'POST'])
@@ -35,36 +40,23 @@ def scatterer():
         spectrum = Spectrum(
             dx=model_params['dx']
         )
-        coordinates_range = np.arange(form.from_value.data, form.to_value.data, form.step.data)
-        coordinates_range2 = np.arange(form.from_value2.data, form.to_value2.data, form.step2.data)
+        coordinates_range_x = create_arrange_with_endpoint(form.from_value_x.data, form.to_value_x.data, form.step_x.data) if \
+            form.to_value_x.data > form.from_value_x.data else np.array([form.from_value_x.data])
+        coordinates_range_y = create_arrange_with_endpoint(form.from_value_y.data, form.to_value_y.data, form.step_y.data) if \
+            form.to_value_y.data > form.from_value_y.data else np.array([form.from_value_y.data])
+        coordinates_range_z = create_arrange_with_endpoint(form.from_value_z.data, form.to_value_z.data, form.step_z.data) if \
+            form.to_value_z.data > form.from_value_z.data else np.array([form.from_value_z.data])
 
-        def set_coordinates(key):
-            if form.type_value.data == key:
-                return coordinates_range
-            elif form.type_value2.data == key:
-                return coordinates_range2
-            else:
-                return np.array([0.0])
         coordinates = Coordinates(
-            x=set_coordinates('X'),
-            y=set_coordinates('Y'),
-            z=set_coordinates('Z'),
+            x=coordinates_range_x,
+            y=coordinates_range_y,
+            z=coordinates_range_z,
             z_surf=model_params['z_surf'])
 
         points = Points(coordinates, obj, wave, spectrum, os.path.join(current_app.config['DATA_FOLDER'], model.path))
         force = points.calculate_force()
-        fig1, fig2, fig3 = points.build_rad_force(force)
-
-        fig1.savefig(os.path.join(current_app.config['FORCE_PATH'], f'{model.name}_force1_{cur_time}.png'))
-        fig2_path = None
-        fig3_path = None
-        if fig2:
-            fig2_path = os.path.join(current_app.config['FORCE_FOLDER'], f'{model.name}_force2_{cur_time}.png')
-            fig2.savefig(os.path.join(current_app.config['FORCE_PATH'], f'{model.name}_force2_{cur_time}.png'))
-        if fig3:
-            fig3_path = os.path.join(current_app.config['FORCE_FOLDER'], f'{model.name}_force3_{cur_time}.png')
-            fig3.savefig(os.path.join(current_app.config['FORCE_PATH'], f'{model.name}_force3_{cur_time}.png'))
-        print(fig3_path, fig2_path)
+        figure = points.build_rad_force(force)
+        figure_params = json.dumps(figure, cls=plotly.utils.PlotlyJSONEncoder)
         np.savetxt(os.path.join(current_app.config['FORCE_PATH'], f'{model.name}_force_{cur_time}.txt'), force)
 
         scatterer_params = {
@@ -76,27 +68,26 @@ def scatterer():
             'SpeedOfSound': model_params['speed_of_sound'],
             'DensityOfMedium': model_params['density_of_medium'],
             'Dx': model_params['dx'],
-            'Type': form.type_value.data,
-            'From': form.from_value.data,
-            'To': form.to_value.data,
-            'Step': form.step.data,
+            'From_x': form.from_value_x.data,
+            'To_x': form.to_value_x.data,
+            'Step_x': form.step_x.data,
+            'From_y': form.from_value_y.data,
+            'To_y': form.to_value_y.data,
+            'Step_y': form.step_y.data,
+            'From_z': form.from_value_z.data,
+            'To_z': form.to_value_z.data,
+            'Step_z': form.step_z.data,
             'ZSurf': model_params['z_surf']
         }
 
         model_result = ModelResult(
-            # x_force=x_force,
-            # y_force=y_force,
-            # z_force=z_force,
             force_data_path=os.path.join(current_app.config['FORCE_FOLDER'], f'{model.name}_force_{cur_time}.txt'),
-            force_image_path=os.path.join(current_app.config['FORCE_FOLDER'], f'{model.name}_force1_{cur_time}.png'),
+            force_image=figure_params,
             model_id=model.id,
             model_params=json.dumps(scatterer_params),
             status_id=1)
         db.session.add(model_result)
         db.session.commit()
         return render_template('scatterer.html', form=form,
-                               figure1=model_result.force_image_path,
-                               figure2=fig2_path,
-                               figure3=fig3_path,
-                               data=model_result.force_data_path)
-    return render_template('scatterer.html', form=form, figure=None, data=None)
+                               figure=figure_params)
+    return render_template('scatterer.html', form=form, figure=None)

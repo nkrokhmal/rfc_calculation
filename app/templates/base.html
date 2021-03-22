@@ -25,6 +25,7 @@
                 <li><a href="{{url_for('api.create_model')}}">Create Model</a></li>
                 <li><a href="{{url_for('api.load_model')}}">Load Model</a></li>
                 <li><a href="{{url_for('api.scatterer')}}">Scatterer</a></li>
+                <li><a href="{{url_for('api.get_models')}}">Models</a></li>
             </ul>
         </div>
     </div>
@@ -42,3 +43,10 @@
     {% block page_content %}{% endblock %}
 </div>
 {% endblock %}
+
+
+{% block javascripts %}
+    {{ super() }}
+    {{ moment.include_moment() }}
+    {{ moment.lang(g.locale) }}
+{% endblock javascripts %}

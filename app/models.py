@@ -32,7 +32,7 @@ class Model(db.Model):
     params = db.Column(db.String)
     status_id = db.Column(db.Integer, db.ForeignKey('statuses.id'), nullable=True)
 
-    model_result = db.relationship("ModelResult", backref=backref("model", lazy="subquery"))
+    model_results = db.relationship("ModelResult", backref=backref("model", lazy="subquery"))
 
     def to_json(self):
         return {
@@ -53,7 +53,7 @@ class ModelResult(db.Model):
     y_force = db.Column(db.Float)
     z_force = db.Column(db.Float)
     force_data_path = db.Column(db.String)
-    force_image_path = db.Column(db.String)
+    force_image = db.Column(db.String)
     model_params = db.Column(db.String)
     status_id = db.Column(db.Integer, db.ForeignKey('statuses.id'))
     model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
