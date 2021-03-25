@@ -1,0 +1,1 @@
+pyinstaller -F --add-data "app;app" --add-binary "config.py;." --add-binary "data.sqlite;." --add-data "migrations;migrations" --onefile main.ptaller -F --add-data "app;app" --add-binary "config.py;." --add-binary "data.sqlite;." --add-data "migrations;migrations" --onefile main.py
