@@ -627,65 +627,65 @@ class Points:
             Fy = Fy[0, 0, :]
             Fz = Fz[0, 0, :]
             x_axis = z_grid
+
         # create figure
 
         if type_plot == '2d':
             fig = go.Figure()
-            fig = make_subplots(rows=1, cols=2, subplot_titles=("Select properties:", " "), column_widths=[0.3, 0.6])
-            # Add surface trace
+
             button_layer_1_height = 0.9
             button_layer_2_height = 0.8
             button_layer_3_height = 0.7
-            button_x_1 = 0.055
-            button_x_2 = 0.055
-            button_x_3 = 0.055
+            button_x_1 = -0.2
+            button_x_2 = -0.2
+            button_x_3 = -0.2
 
             fig.add_trace(go.Contour(z=Fx,
                                      x=x_axis,
                                      y=y_axis,
                                      colorscale='Viridis',
-                                     contours_coloring='heatmap',
+                                     # contours_coloring='heatmap',
                                      zmin=np.min(np.min(Fx, 0)),
                                      zmax=np.max(np.max(Fx, 0)),
                                      visible=True,
                                      name='Fx'
-                                     ), 1, 2)
+                                     ))
             fig.add_trace(go.Contour(z=Fy,
                                      x=x_axis,
                                      y=y_axis,
                                      colorscale='Viridis',
-                                     contours_coloring='heatmap',
+                                     # contours_coloring='heatmap',
                                      zmin=np.min(np.min(Fy, 0)),
                                      zmax=np.max(np.max(Fy, 0)),
                                      visible=False,
                                      name='Fy'
-                                     ), 1, 2)
+                                     ))
             fig.add_trace(go.Contour(z=Fz,
                                      x=x_axis,
                                      y=y_axis,
                                      colorscale='Viridis',
-                                     contours_coloring='heatmap',
+                                     # contours_coloring='heatmap',
                                      zmin=np.min(np.min(Fz, 0)),
                                      zmax=np.max(np.max(Fz, 0)),
                                      visible=False,
                                      name='Fx'
-                                     ), 1, 2)
+                                     ))
             fig.add_trace(go.Contour(z=(Fx ** 2 + Fy ** 2 + Fz ** 2) ** 0.5,
                                      x=x_axis,
                                      y=y_axis,
                                      colorscale='Viridis',
-                                     contours_coloring='heatmap',
+                                     # contours_coloring='heatmap',
                                      zmin=np.min(np.min((Fx ** 2 + Fy ** 2 + Fz ** 2) ** 0.5, 0)),
                                      zmax=np.max(np.max((Fx ** 2 + Fy ** 2 + Fz ** 2) ** 0.5, 0)),
                                      visible=False,
                                      name='abs(F)'
-                                     ), 1, 2)
+                                     ))
             # Update plot sizing
             fig.update_layout(
-                # width=1000,
                 height=600,
+                title="Fx component of normalised radiation force on  " + type_field + "-plane",
                 autosize=True,
-                # margin=dict(t=0, b=0, l=0, r=0),
+                margin_l=200,
                 template="plotly_white",
             )
             # Add dropdown
@@ -749,19 +749,22 @@ class Points:
                             dict(label="Fx",
                                  method="update",
                                  args=[{"visible": [True, False, False, False]},
-                                       {"title": "Fx component of radiation force on  " + type_field + "-plane"}]),
+                                       {
+                                           "title": "Fx component of normalised radiation force on  " + type_field + "-plane"}]),
                             dict(label="Fy",
                                  method="update",
                                  args=[{"visible": [False, True, False, False]},
-                                       {"title": "Fy component of radiation force on  " + type_field + "-plane"}]),
+                                       {
+                                           "title": "Fy component of normalised radiation force on  " + type_field + "-plane"}]),
                             dict(label="Fz",
                                  method="update",
                                  args=[{"visible": [False, False, True, False]},
-                                       {"title": "Fz component of radiation force on  " + type_field + "-plane"}]),
+                                       {
+                                           "title": "Fz component of normalised radiation force on  " + type_field + "-plane"}]),
                             dict(label="abs(F)",
                                  method="update",
                                  args=[{"visible": [False, False, False, True]},
-                                       {"title": "Radiation force module on  " + type_field + "-plane"}])]),
+                                       {"title": "Normalised radiation force module on  " + type_field + "-plane"}])]),
                         direction="down",
                         pad={"r": 10, "t": 10},
                         showactive=True,
@@ -786,8 +789,9 @@ class Points:
             #              align="right", showarrow=False)
             #     ]
             # )
-            fig.update_xaxes(title_text=type_field[1] + "-axis, mm", row=1, col=2)
-            fig.update_yaxes(title_text=type_field[0] + "-axis, mm", row=1, col=2)
+
+            fig.update_xaxes(title_text=type_field[1] + "-axis, mm")
+            fig.update_yaxes(title_text=type_field[0] + "-axis, mm")
 
         elif type_plot == '1d':
             fig = go.Figure()
@@ -802,20 +806,20 @@ class Points:
             fig.update_layout(legend=dict(y=0.5, traceorder='reversed', font_size=16))
             fig.update_layout(title='Component of normalised radiation force on ' + type_field[0] + '-axis, mm',
                               xaxis_title=type_field[0] + '-axis, mm',
-                              yaxis_title='F, c/W[N]')
+                              yaxis_title='F, c/W*[N]')
 
         elif type_plot == '3d':
             num_steps = len(Fx[0, 0, :])
             abs_F = (Fx[:, :, :] ** 2 + Fy[:, :, :] ** 2 + Fz[:, :, :] ** 2) ** 0.5
-            button_layer_1_height = 0.9
-            button_layer_2_height = 0.8
-            button_layer_3_height = 0.7
+            button_layer_1_height = 0.8
+            button_layer_2_height = 0.7
+            button_layer_3_height = 0.6
+            button_layer_4_height = 1
             button_x_1 = -0.2
             button_x_2 = -0.2
             button_x_3 = -0.2
-            # fig = make_subplots(rows=1, cols = 2, subplot_titles=("Select properties:", " "), column_widths=[0.3, 0.6])
+            button_x_4 = -0.2
 
-            # fig.add_trace(go.Contour(z = Fx[:,:,0],
             fig = go.Figure(
                 data=[go.Contour(z=Fx[:, :, 0],
                                  x=x_grid,
@@ -841,51 +845,35 @@ class Points:
                                  visible=False,
                                  name='abs(F)',
                                  colorscale='Viridis')
-                      ],
-                layout=go.Layout(height=600,  # width=600,
-                                 title="Moving Frenet Frame Along a Planar Curve",
-                                 hovermode="closest",
-                                 updatemenus=[dict(type="buttons",
-                                                   buttons=[dict(label="Play",
-                                                                 method="animate",
-                                                                 args=[None])])
-                                              ]),
+                      ])
+            fig.update_layout(height=600,
+                              title="Fx component of normalised radiation force on  " + type_field + "-plane",
+                              xaxis_title=type_field[1] + '-axis, mm',
+                              yaxis_title=type_field[0] + '-axis, mm')
+            frames = []
+            for k in range(num_steps):
+                frames.append(go.Frame(name=str(k),
+                                       data=[go.Contour(z=Fx[:, :, k]),
+                                             go.Contour(z=Fy[:, :, k]),
+                                             go.Contour(z=Fz[:, :, k]),
+                                             go.Contour(z=abs_F[:, :, k])]))
 
-                frames=[go.Frame(
-                    data=[go.Contour(z=Fx[:, :, k]),
-                          go.Contour(z=Fy[:, :, k]),
-                          go.Contour(z=Fz[:, :, k]),
-                          go.Contour(z=abs_F[:, :, k])
-                          ]) for k in range(num_steps)]
-            )
+            steps = []
+            for i in range(num_steps):
+                step = dict(
+                    label=np.array2string(z_grid[i]),
+                    method="animate",
+                    args=[[str(i)]]
+                )
+                steps.append(step)
 
-            def frame_args(N):
-                return {
-                    "frame": {"N": N},
-                    "mode": "immediate",
-                    "fromcurrent": True,
-                    "transition": {"N": N, "easing": "linear"},
-                }
+            sliders = [dict(
+                steps=steps,
+                currentvalue={"prefix": "z-coordinate, mm: ", "font": {"size": 16}},
+            )]
 
-            sliders = [
-                {
-                    "pad": {"b": 10, "t": 60},
-                    "len": 0.9,
-                    "x": 0.1,
-                    "y": 0,
-                    "steps": [
-                        {
-                            "args": [[f.name], frame_args(0)],
-                            "label": str(k),
-                            "method": "animate",
-                        }
-                        for k, f in enumerate(fig.frames)
-                    ],
-                }
-            ]
-            # Add dropdown
             fig.update_layout(
-                sliders=sliders,
+                margin_l=200,
                 updatemenus=[
                     dict(
                         buttons=list([
@@ -945,19 +933,22 @@ class Points:
                             dict(label="Fx",
                                  method="update",
                                  args=[{"visible": [True, False, False, False]},
-                                       {"title": "Fx component of radiation force on  " + type_field + "-plane"}]),
+                                       {
+                                           "title": "Fx component of normalised radiation force on  " + type_field + "-plane"}]),
                             dict(label="Fy",
                                  method="update",
                                  args=[{"visible": [False, True, False, False]},
-                                       {"title": "Fy component of radiation force on  " + type_field + "-plane"}]),
+                                       {
+                                           "title": "Fy component of normalised radiation force on  " + type_field + "-plane"}]),
                             dict(label="Fz",
                                  method="update",
                                  args=[{"visible": [False, False, True, False]},
-                                       {"title": "Fz component of radiation force on  " + type_field + "-plane"}]),
+                                       {
+                                           "title": "Fz component of normalised radiation force on  " + type_field + "-plane"}]),
                             dict(label="abs(F)",
                                  method="update",
                                  args=[{"visible": [False, False, False, True]},
-                                       {"title": "Radiation force module on  " + type_field + "-plane"}])]),
+                                       {"title": "Normalised radiation force module on  " + type_field + "-plane"}])]),
                         direction="down",
                         pad={"r": 10, "t": 10},
                         showactive=True,
@@ -965,32 +956,31 @@ class Points:
                         xanchor="left",
                         y=button_layer_3_height,
                         yanchor="top"
-                    )
+                    ),
+                    dict(showactive=False,
+                         type="buttons",
+                         buttons=[dict(label="Play",
+                                       method="animate",
+                                       args=[None, {"fromcurrent": True}]),
+                                  dict(label="Pause",
+                                       method="animate",
+                                       args=[[None], {"frame": {"duration": 0,
+                                                                "redraw": False},
+                                                      "mode": "immediate",
+                                                      "transition": {"duration": 0}}])
+                                  ],
+                         pad={"r": 10, "t": 10},
+                         x=button_x_4,
+                         xanchor="left",
+                         y=button_layer_4_height,
+                         yanchor="top"
+                         ),
+
                 ]
             )
-            # def frame_args(duration):
-            #   return {
-            #           "frame": {"duration": duration},
-            #           "mode": "immediate",
-            #           "fromcurrent": True,
-            #           "transition": {"duration": duration, "easing": "linear"},
-            #       }
-            # sliders = [
-            #             {
-            #                 # "pad": {"b": 10, "t": 60},
-            #                 # "len": 0.9,
-            #                 # "x": 0.1,
-            #                 # "y": 0,
-            #                 "steps": [
-            #                     {
-            #                         "args": [[f.name], frame_args(0)],
-            #                         "label": str(k),
-            #                         "method": "animate",
-            #                     }
-            #                     for k, f in enumerate(fig.frames)
-            #                 ],
-            #             }
-            #         ]
             fig.layout.sliders = sliders
+            fig.frames = frames
+
         # fig.show()
+
         return fig
