@@ -815,10 +815,10 @@ class Points:
             button_layer_2_height = 0.7
             button_layer_3_height = 0.6
             button_layer_4_height = 1
-            button_x_1 = -0.2
-            button_x_2 = -0.2
-            button_x_3 = -0.2
-            button_x_4 = -0.2
+            button_x_1 = -0.3
+            button_x_2 = -0.3
+            button_x_3 = -0.3
+            button_x_4 = -0.3
 
             fig = go.Figure(
                 data=[go.Contour(z=Fx[:, :, 0],
@@ -844,6 +844,30 @@ class Points:
                                  y=y_grid,
                                  visible=False,
                                  name='abs(F)',
+                                 colorscale='Viridis'),
+                      go.Heatmap(z=Fx[:, :, 0],
+                                 x=x_grid,
+                                 y=y_grid,
+                                 visible=False,
+                                 name='Fx',
+                                 colorscale='Viridis'),
+                      go.Heatmap(z=Fy[:, :, 0],
+                                 x=x_grid,
+                                 y=y_grid,
+                                 visible=False,
+                                 name='Fy',
+                                 colorscale='Viridis'),
+                      go.Heatmap(z=Fz[:, :, 0],
+                                 x=x_grid,
+                                 y=y_grid,
+                                 visible=False,
+                                 name='Fz',
+                                 colorscale='Viridis'),
+                      go.Heatmap(z=abs_F[:, :, 0],
+                                 x=x_grid,
+                                 y=y_grid,
+                                 visible=False,
+                                 name='abs(F)',
                                  colorscale='Viridis')
                       ])
             fig.update_layout(height=600,
@@ -856,7 +880,11 @@ class Points:
                                        data=[go.Contour(z=Fx[:, :, k]),
                                              go.Contour(z=Fy[:, :, k]),
                                              go.Contour(z=Fz[:, :, k]),
-                                             go.Contour(z=abs_F[:, :, k])]))
+                                             go.Contour(z=abs_F[:, :, k]),
+                                             go.Heatmap(z=Fx[:, :, k]),
+                                             go.Heatmap(z=Fy[:, :, k]),
+                                             go.Heatmap(z=Fz[:, :, k]),
+                                             go.Heatmap(z=abs_F[:, :, k])]))
 
             steps = []
             for i in range(num_steps):
@@ -875,27 +903,27 @@ class Points:
             fig.update_layout(
                 margin_l=200,
                 updatemenus=[
-                    dict(
-                        buttons=list([
-                            dict(
-                                args=["type", "contour"],
-                                label="Contour",
-                                method="restyle"
-                            ),
-                            dict(
-                                args=["type", "heatmap"],
-                                label="Heatmap",
-                                method="restyle"
-                            )
-                        ]),
-                        direction="down",
-                        pad={"r": 10, "t": 10},
-                        showactive=True,
-                        x=button_x_1,
-                        xanchor="left",
-                        y=button_layer_1_height,
-                        yanchor="top"
-                    ),
+                    # dict(
+                    #     buttons=list([
+                    #         dict(
+                    #             args=["type", "contour"],
+                    #             label="Contour",
+                    #             method="restyle"
+                    #         ),
+                    #         dict(
+                    #             args=["type", "heatmap"],
+                    #             label="Heatmap",
+                    #             method="restyle"
+                    #         )
+                    #     ]),
+                    #     direction="down",
+                    #     pad={"r": 10, "t": 10},
+                    #     showactive=True,
+                    #     x=button_x_1,
+                    #     xanchor="left",
+                    #     y=button_layer_1_height,
+                    #     yanchor="top"
+                    # ),
                     dict(
                         buttons=list([
                             dict(
@@ -930,25 +958,45 @@ class Points:
                     dict(
                         active=0,
                         buttons=list([
-                            dict(label="Fx",
+                            dict(label="Fx Contour",
                                  method="update",
-                                 args=[{"visible": [True, False, False, False]},
+                                 args=[{"visible": [True, False, False, False, False, False, False, False]},
                                        {
                                            "title": "Fx component of normalised radiation force on  " + type_field + "-plane"}]),
-                            dict(label="Fy",
+                            dict(label="Fy Contour",
                                  method="update",
-                                 args=[{"visible": [False, True, False, False]},
+                                 args=[{"visible": [False, True, False, False, False, False, False, False]},
                                        {
                                            "title": "Fy component of normalised radiation force on  " + type_field + "-plane"}]),
-                            dict(label="Fz",
+                            dict(label="Fz Contour",
                                  method="update",
-                                 args=[{"visible": [False, False, True, False]},
+                                 args=[{"visible": [False, False, True, False, False, False, False, False]},
                                        {
                                            "title": "Fz component of normalised radiation force on  " + type_field + "-plane"}]),
-                            dict(label="abs(F)",
+                            dict(label="abs(F) Contour",
                                  method="update",
-                                 args=[{"visible": [False, False, False, True]},
-                                       {"title": "Normalised radiation force module on  " + type_field + "-plane"}])]),
+                                 args=[{"visible": [False, False, False, True, False, False, False, False]},
+                                       {"title": "Normalised radiation force module on  " + type_field + "-plane"}]),
+                            dict(label="Fx Heatmap",
+                                 method="update",
+                                 args=[{"visible": [False, False, False, False, True, False, False, False]},
+                                       {
+                                           "title": "Fx component of normalised radiation force on  " + type_field + "-plane"}]),
+                            dict(label="Fy Heatmap",
+                                 method="update",
+                                 args=[{"visible": [False, False, False, False, False, True, False, False]},
+                                       {
+                                           "title": "Fy component of normalised radiation force on  " + type_field + "-plane"}]),
+                            dict(label="Fz Heatmap",
+                                 method="update",
+                                 args=[{"visible": [False, False, False, False, False, False, True, False]},
+                                       {
+                                           "title": "Fz component of normalised radiation force on  " + type_field + "-plane"}]),
+                            dict(label="abs(F) Heatmap",
+                                 method="update",
+                                 args=[{"visible": [False, False, False, False, False, False, False, True]},
+                                       {"title": "Normalised radiation force module on  " + type_field + "-plane"}])
+                        ]),
                         direction="down",
                         pad={"r": 10, "t": 10},
                         showactive=True,
