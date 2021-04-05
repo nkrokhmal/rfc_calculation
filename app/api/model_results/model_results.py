@@ -12,7 +12,7 @@ def delete_model_result(model_result_id):
         .first()
     db.session.delete(model_result)
     db.session.commit()
-    return redirect(url_for('.get_model_result'))
+    return redirect(url_for('.get_models'))
 
 
 @api.route("/get_model_result/<int:id>", methods=['GET', 'POST'])
