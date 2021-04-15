@@ -1,9 +1,78 @@
 {% extends "base.html" %}
-
 {% block content %}
+<style>
+   .fig {
+    display: block;
+    text-align: center;
+    font-style: italic;
+    margin-top: 0;
+    margin-bottom: 25px;
+   }
+</style>
+
 <body>
     <div class="container">
-        <h3>Welcome to RFC</h3>
+        <div class="card card-body bg-white border-light shadow-sm mb-4">
+            <h3>Welcome to acoustic radiation force calculator!</h3>
+            <div class="mt-3 mb-4 font-weight-normal">
+                <ul>
+                    <li>On this page you can calculate acoustic radiation force from arbitrary pressure field, acting on elastic sphere of any size.</li>
+                    <li>
+                        Calculation technique is described in a
+                        <a class="page-link" href="https://asa.scitation.org/doi/abs/10.1121/1.4773924">paper</a>.
+                    </li>
+                    <li>
+                        If you want to use a field of focused source, you can calculate it on a tab
+                        <a class="page-link" href="{{ url_for('api.create_model') }}">Create Model</a>.
+                        Enter parameters of the source and press “Calculate”.
+                    </li>
+                    <li>
+                        If you want to use an arbitrary field, you can load .mat-file with acoustic pressure field
+                        in square table format on a tab <a class="page-link" href="{{ url_for('api.load_model') }}">Load Model</a>.
+                        Pressure must be complex and contain information about amplitude and phase in
+                        every point. Also enter name of your model and another important data (special step, amplitude factor, etc.)
+                        about your field.
+                    </li>
+                    <li>
+                        The field will be saved on a tab <a class="page-link" href="{{ url_for('api.get_models') }}">Models</a>.
+                    </li>
+                    <li>
+                        Then enter parameters of the scatterer and coordinates, where it is positioned. If you want to calculate
+                        radiation force along the only one axis, enter same “start” and “end” values at other axis. Pay attention on
+                        chosen parameters of scatterer and amount of points: in case of big scatterer calculation can take significant
+                        amount of time.
+                    </li>
+                    <li>
+                        Results of radiation force calculation are also saved on a tab <a class="page-link" href="{{ url_for('api.get_models') }}">Models</a>.
+                        You can download a .txt-file with results.
+                    </li>
+
+                </ul>
+            </div>
+            <h3>Geometry of source and scatterer</h3>
+            <div class="row">
+                <div class="header-img">
+                    <figure class="fig">
+                        <img src= "static/icons/scheme.png" height="250">
+                    </figure>
+                </div>
+                <div class="col-sm-12">
+                    <ul>
+                        <li>
+                            The surface of the sound wave source is located on the S0 plane. The Rayleigh integral is used to calculate the
+                            distribution of pressure and phase on the plane S, located perpendicular to the source at a certain distance
+                            from it.
+                        </li>
+                        <li>
+                            A coordinate system is introduced with respect to the pressure distribution on the S plane: x and y are located
+                            in the S plane, and z is directed perpendicularly.</li>
+                        <li>
+                            The acoustic radiation force acting on a given scatterer placed at a point with coordinates (x, y, z) is calculated.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 {% endblock %}
