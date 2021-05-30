@@ -1,4 +1,14 @@
 Flask~=1.0.2
+Flask==1.1.2
+Flask-Migrate==2.5.3
+flask-restplus==0.13.0
+flask-restx==0.2.0
+Flask-Script==2.0.6
+Flask-SQLAlchemy==2.4.1
+flask_pagedown
+flask_bootstrap
+flask_wtf
+flask_admin
 WTForms~=2.2.1
 requests~=2.23.0
 numpy~=1.19.0
