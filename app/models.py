@@ -46,6 +46,15 @@ class Model(db.Model):
         }
 
 
+class Scatterer(db.Model):
+    __tablename__ = 'scatterers'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    longitudinal_velocity = db.Column(db.Float)
+    shear_velocity = db.Column(db.Float)
+    density = db.Column(db.Float)
+
+
 class ModelResult(db.Model):
     __tablename__ = 'model_results'
     id = db.Column(db.Integer, primary_key=True)

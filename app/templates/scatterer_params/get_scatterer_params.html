@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Scatterer parameters{% endblock %}
+{% block page_content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<div class="py-4">
+    <div class="d-flex justify-content-between w-100 flex-wrap">
+        <div class="mb-3 mb-lg-0">
+            <h1 class="h4">List of all scatterers</h1>
+        </div>
+    </div>
+</div>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="btn-toolbar dropdown">
+        <a href="{{url_for('api.add_scatterer_params')}}" class="btn btn-secondary text-dark mr-4 mb-3 mb-lg-0">
+            <span class="fas fa-plus mr-2"></span>Add new scatterer
+        </a>
+    </div>
+</div>
+<div class="card border-light shadow-sm mb-4">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-centered table-nowrap mb-0 rounded">
+                <thead class="thead-light">
+                    <tr>
+                        <th class="border-0">#</th>
+                        <th class="border-0">Name</th>
+                        <th class="border-0">Longitudinal velocity</th>
+                        <th class="border-0">Shear velocity</th>
+                        <th class="border-0">Density</th>
+                        <th class="border-0">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scatterer in scatterers %}
+                        <tr>
+                            <td class="border-0">{{loop.index}}</td>
+                            <td class="border-0"><a class="small">{{scatterer.name}}</a></td>
+                            <td class="border-0"><a class="small">{{scatterer.longitudinal_velocity}}</a></td>
+                            <td class="border-0"><a class="small">{{scatterer.shear_velocity}}</a></td>
+                            <td class="border-0"><a class="small">{{scatterer.density}}</a></td>
+                            <td class="border-0">
+                                <a href="{{ url_for('api.edit_scatterer_params', scatterer_id = scatterer.id)}}" class="edit-scatterer">
+                                    <i class="material-icons" style="color:green" title="Change"> <span class="fas fa-edit"> </i>
+                                </a>
+                                <a href="#delete_scatterer" class="delete-current-scatterer" data-id={{scatterer.id}} data-toggle="modal">
+                                    <i class="material-icons" data-toggle="tooltip" style="color:red" title="Delete"> <span class="fas fa-trash"> </i>
+                                </a>
+                                <div id="delete_scatterer" class="modal fade" >
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form>
+                                                <div class="modal-header">
+                                                    <h4 class="modal-title">Delete scatterer</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to delete scatterer?</p>
+                                                    <p class="text-warning"><small>This action cannot be undone.</small></p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                                                    <input type="submit" class="btn btn-danger btn-ok" value= Удалить>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script type="text/javascript">
+    $(function () {
+        $(".delete-current-scatterer").click(function () {
+            var id = $(this).data('id');
+            $(".btn.btn-danger.btn-ok").click(function(){
+                $.ajax(
+                {
+                    url: '/delete_scatterer_params/' + id,
+                    type: 'DELETE',
+                    success: function(res)
+                    {
+                        console.log(res)
+                    },
+                    error: function(error) {
+                          console.log(error);
+                    }
+                });
+            });
+        })
+    });
+</script>
+{% endblock javascripts %}

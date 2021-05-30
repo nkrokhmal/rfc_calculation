@@ -4,7 +4,7 @@ from wtforms import StringField, SubmitField, SelectField, FloatField, FileField
 from wtforms.validators import Required, InputRequired
 
 from app import db
-from ..models import Model
+from ..models import Model, Scatterer
 
 
 class NameForm(FlaskForm):
@@ -88,13 +88,14 @@ class ScattererForm(FlaskForm):
         self.model_name.choices = list(enumerate(set([x.name for x in self.model_names])))
 
 
+# todo: rename
 class CreateModelForm(FlaskForm):
     model_name = StringField('Enter model name', validators=[Required()])
     radius_of_hole = FloatField('Enter value of radius of hole', default=0.)
-    radius_of_transducer = FloatField('Enter value of radius of transducer', default=0.05)
-    spatial_step = FloatField('Enter value of dx', default=0.001)
-    curvative_radius = FloatField('Enter value of curvative radius', default=0.07)
-    frequency = FloatField('Enter value of frequency', default=1000000.)
+    radius_of_transducer = FloatField('Enter value of radius of transducer', default=50)
+    spatial_step = FloatField('Enter value of dx', default=1)
+    curvative_radius = FloatField('Enter value of curvative radius', default=70)
+    frequency = FloatField('Enter value of frequency', default=1.)
     density_of_water = FloatField('Enter density of medium', default=1000.)
     speed_of_sound_in_water = FloatField('Enter value of speed of sound', default=1500.)
     pressure_amplitude = FloatField('Enter value of pressure amplitude', default=1.)
@@ -109,3 +110,10 @@ class ModelResultsForm(FlaskForm):
         super(ModelResultsForm, self).__init__(*args, **kwargs)
         self.model_names = db.session.query(Model).all()
         self.model_name.choices = list(enumerate(set([x.name for x in self.model_names])))
+
+
+class SphericalScattererParametersForm(FlaskForm):
+    name = StringField('Field name', validators=[Required()])
+    longitudinal_velocity = FloatField('Longitudinal velocity, m/s', validators=[Required()])
+    shear_velocity = FloatField('Shear velocity, m/s', validators=[Required()])
+    density = FloatField('Density, kg/m^3', validators=[Required()])

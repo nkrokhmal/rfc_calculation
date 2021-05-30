@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}RFC - focused source model{% endblock %}
+{% block page_content %}
+<div class="row">
+    <div class="py-4">
+        <div class="d-flex justify-content-between w-100 flex-wrap">
+            <div class="mb-3 mb-lg-0">
+                <h1 class="h4">Focused source model <br></h1>
+            </div>
+        </div>
+    </div>
+    <form method="post" action="/focused_source_model" class="mt-4">
+        {{ form.hidden_tag() }}
+        <div class="row mb-4">
+            <div class="col-12 col-xl-8 mb-4">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <div class="form-group">
+                            <label>Model name</label>
+                            {{form.model_name(place_holder='Name', class='form-control')}}
+                        </div>
+                    </div>
+                    <div class="py-4">
+                        <div class="d-flex justify-content-between w-100 flex-wrap">
+                            <div class="mb-3 mb-lg-0">
+                                <h1 class="h5">Medium</h1>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 mb-4">
+                        <div class="form-group">
+                            <label>Speed of sound, m/s</label>
+                            {{form.speed_of_sound_in_water(place_holder='speed_of_sound_in_water', class='form-control')}}
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 mb-4">
+                        <div class="form-group">
+                            <label>Density, kg/m^3</label>
+                            {{form.density_of_water(place_holder='density_of_water', class='form-control')}}
+                        </div>
+                    </div>
+                    <div class="py-4">
+                        <div class="d-flex justify-content-between w-100 flex-wrap">
+                            <div class="mb-3 mb-lg-0">
+                                <h1 class="h5">Source</h1>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 mb-4">
+                            <div class="form-group">
+                                <label>Frequency, MHz</label>
+                                {{form.frequency(place_holder='frequency', class='form-control')}}
+                            </div>
+                            <div class="form-group">
+                                <label>Spatial step, mm</label>
+                                {{form.spatial_step(place_holder='spatial_step', class='form-control')}}
+                            </div>
+                            <div class="form-group">
+                                <label>External diameter, mm</label>
+                                {{form.radius_of_transducer(place_holder='radius_of_transducer', class='form-control')}}
+                            </div>
+                    </div>
+                    <div class="col-12 col-lg-6 mb-4">
+                            <div class="form-group">
+                                <label>Central opening diameter, mm</label>
+                                {{form.radius_of_hole(place_holder='radius_of_hole', class='form-control')}}
+                            </div>
+                            <div class="form-group">
+                                <label>Focal length, mm</label>
+                                {{form.curvative_radius(place_holder='curvative_radius', class='form-control')}}
+                            </div>
+                            <div class="form-group">
+                                <label>Sound pressure amplitude, Pa</label>
+                                {{form.pressure_amplitude(place_holder='pressure_amplitude', class='form-control')}}
+                            </div>
+                    </div>
+                    <div class="col-md-12 mb-3" style="margin-top:30px;">
+                        <button type="submit" name="submit" class="btn btn-block btn-primary">Submit</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-xl-4 mb-4">
+                {% if figure %}
+                    <div class="row" >
+                        <div class="header-img">
+                            <img src= "{{ url_for('api.send_data', path=figure)}}" width="500" height="400">
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

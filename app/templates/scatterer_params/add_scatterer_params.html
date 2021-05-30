@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Scatterer - add new scatterer{% endblock %}
+{% block page_content %}
+<div class="row">
+    <div class="py-4">
+        <div class="d-flex justify-content-between w-100 flex-wrap">
+            <div class="mb-3 mb-lg-0">
+                <h1 class="h4">Add new scatterer <br></h1>
+            </div>
+        </div>
+    </div>
+    <form method="post" action="/add_scatterer_params" class="mt-4">
+        {{ form.hidden_tag() }}
+        <div class="row mb-4">
+            <div class="col-lg-6 col-sm-6">
+                <div class="col-md-12 mb-3">
+                    <div class="form-group">
+                        <label>Enter scatterer name</label>
+                        {{form.name(place_holder='Name', class='form-control')}}
+                    </div>
+                </div>
+                <div class="col-md-12 mb-3">
+                    <div class="form-group">
+                        <label>Enter longitudinal velocity, m/s</label>
+                        {{form.longitudinal_velocity(place_holder='Longitudinal', class='form-control')}}
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-lg-6 col-sm-6">
+                <div class="col-md-12 mb-3">
+                    <div class="form-group">
+                        <label>Enter shear velocity, m/s</label>
+                        {{form.shear_velocity(place_holder='Shear', class='form-control')}}
+                    </div>
+                </div>
+                <div class="col-md-12 mb-3">
+                    <div class="form-group">
+                        <label>Enter density, kg/m^3</label>
+                        {{form.density(place_holder='Density', class='form-control')}}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 mb-3" style="margin-top:30px;">
+                <button type="submit" name="submit" class="btn btn-block btn-primary">Save scatterer</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
