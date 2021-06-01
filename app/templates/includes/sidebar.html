@@ -12,26 +12,36 @@
                 <span>
                     <span class="sidebar-icon">
                         <a href="/" class="nav-link" style="text-align: center;">
-                            <img src="/static/icons/data/logo.png" height=80" alt="RFC">
+                            <h1>RFC</h1>
+                            <span>Radiation force calculator</span>
                         </a>
                     </span>
                 </span>
             <li role="separator" class="dropdown-divider mt-4 mb-3 border-black"></li>
             <li class="nav-item">
-                <a href="{{url_for('api.focused_source_model')}}" class="nav-link d-flex align-items-center">
-                <span class="sidebar-icon">
-                    <span class="fas  fa-wifi" height="20" width="20"></span>
+                <span class="nav-link  collapsed  d-flex justify-content-between align-items-center" data-toggle="collapse" data-target="#submenu-app">
+                    <span>
+                        <span class="sidebar-icon">
+                            <span class="fas  fa-wifi" height="20" width="20"></span>
+                        </span>
+                        Focused source
+                    </span>
+                    <span class="link-arrow"><span class="fas fa-chevron-right"></span></span>
                 </span>
-                <span class="mt-1">Focused source model</span>
-                </a>
+                <div class="multi-level collapse " role="list" id="submenu-app" aria-expanded="false">
+                    <ul class="flex-column nav">
+                        <li class="nav-item "><a class="nav-link" href="{{url_for('api.focused_source_model')}}"><span>Build</span></a></li>
+                        <li class="nav-item "><a class="nav-link" href="{{url_for('api.focused_source_model_help')}}"><span>Help</span></a></li>
+                    </ul>
+                </div>
             </li>
             <li role="separator" class="dropdown-divider mt-4 mb-3 border-black"></li>
             <li class="nav-item">
-                <a href="{{url_for('api.load_model')}}" class="nav-link d-flex align-items-center">
+                <a href="{{url_for('api.arbitrary_source_model')}}" class="nav-link d-flex align-items-center">
                 <span class="sidebar-icon">
                     <span class="fas fa-spinner" height="20" width="20"></span>
                 </span>
-                <span class="mt-1">Arbitrary source model</span>
+                <span class="mt-1">Arbitrary source</span>
                 </a>
             </li>
             <li role="separator" class="dropdown-divider mt-4 mb-3 border-black"></li>

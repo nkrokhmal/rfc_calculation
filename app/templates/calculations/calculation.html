@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}RFC - calculation{% endblock %}
+{% block page_content %}
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+
+<div class="row">
+    <div class="py-4">
+        <div class="d-flex justify-content-between w-100 flex-wrap">
+            <div class="mb-3 mb-lg-0">
+                <h1 class="h4">Calculation <br></h1>
+            </div>
+        </div>
+    </div>
+    <form method="post" action="/calculation" class="mt-4">
+        {{ form.hidden_tag() }}
+        <div class="row mb-4">
+            <div class="col-12 col-xl-8 mb-4">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <div class="form-group">
+                            <label>Model name</label>
+                            {{form.model_name(place_holder='model_name', class='form-select')}}
+                        </div>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <div class="form-group">
+                            <label>Material</label>
+                            {{form.material(place_holder='material', class='form-select')}}
+                        </div>
+                    </div>
+                    <div class="py-4">
+                        <div class="d-flex justify-content-between w-100 flex-wrap">
+                            <div class="mb-3 mb-lg-0">
+                                <h1 class="h5">Material parameters</h1>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 mb-4">
+                        <div class="form-group">
+                            <label>Radius</label>
+                            {{form.radius(place_holder='radius', class='form-control')}}
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 mb-4">
+                    </div>
+                    <div class="py-4">
+                        <div class="d-flex justify-content-between w-100 flex-wrap">
+                            <div class="mb-3 mb-lg-0">
+                                <h1 class="h5">Coordinate parameters</h1>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" >
+                        <div class="form-group col-md-4">
+                            <label>Enter begin coordinate value</label>
+                            {{ form.from_value_x(class='form-control', placeholder='from_value_x') }}
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label>Enter end coordinate value</label>
+                            {{ form.to_value_x(class='form-control', placeholder='to_value_x') }}
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label>Enter step value</label>
+                            {{ form.step_x(class='form-control', placeholder='step_x') }}
+                        </div>
+                    </div>
+                    <div class="row" >
+                        <div class="form-group col-md-4">
+                            <label>Enter begin coordinate value</label>
+                            {{ form.from_value_y(class='form-control', placeholder='from_value_y') }}
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label>Enter end coordinate value</label>
+                            {{ form.to_value_y(class='form-control', placeholder='to_value_y') }}
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label>Enter step value</label>
+                            {{ form.step_y(class='form-control', placeholder='step_y') }}
+                        </div>
+                    </div>
+                    <div class="row" >
+                        <div class="form-group col-md-4">
+                            <label>Enter begin coordinate value</label>
+                            {{ form.from_value_z(class='form-control', placeholder='from_value_z') }}
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label>Enter end coordinate value</label>
+                            {{ form.to_value_z(class='form-control', placeholder='to_value_z') }}
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label>Enter step value</label>
+                            {{ form.step_z(class='form-control', placeholder='step_z') }}
+                        </div>
+                    </div>
+                    <div class="col-md-12 mb-3" style="margin-top:30px;">
+                        <button type="submit" name="submit" class="btn btn-block btn-primary">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    {% if figure %}
+    <div class="chart" id="bargraph">
+        <script>
+            var graphs = {{figure | safe}};
+            Plotly.plot('bargraph',graphs,{});
+        </script>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

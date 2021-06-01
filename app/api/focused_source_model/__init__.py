@@ -1,1 +1,1 @@
-from . import focused_source_model
+from . import focused_source_model, help

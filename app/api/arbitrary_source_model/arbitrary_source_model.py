@@ -10,8 +10,8 @@ import io
 import json
 
 
-@api.route('/load_model', methods=["GET", "POST"])
-def load_model():
+@api.route('/arbitrary_source_model', methods=["GET", "POST"])
+def arbitrary_source_model():
     form = UploadModelForm()
     if request.method == 'POST' and form.validate_on_submit():
         model_name = form.model_name.data
@@ -24,7 +24,7 @@ def load_model():
                 'frequency': form.frequency.data,
                 'speed_of_sound': form.speed_of_sound.data,
                 'density_of_medium': form.density_of_medium.data,
-                'z_surf': form.z_surf.data,
+                'z_surf': 0,
             }
         )
         file_bytes = io.BytesIO(request.files["input_file"].read())
@@ -46,5 +46,5 @@ def load_model():
         )
         db.session.add(model)
         db.session.commit()
-        return render_template('load_model.html', form=form, figure=model.pressure_distribution_path)
-    return render_template('load_model.html', form=form, figure=None)
+        return render_template('arbitrary_source_model/arbitrary_source_model.html', form=form, figure=model.pressure_distribution_path)
+    return render_template('arbitrary_source_model/arbitrary_source_model.html', form=form, figure=None)

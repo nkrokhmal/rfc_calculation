@@ -36,10 +36,8 @@ class UploadModelForm(FlaskForm):
 
 class ScattererForm(FlaskForm):
     model_name = SelectField('Field name', coerce=int, validators=[InputRequired()])
+    material = SelectField('Material name', coerce=int, validators=[InputRequired()])
     radius = FloatField("Enter value radius, m", default=0.0001)
-    longitudinal = FloatField("Enter longitudinal speed of sound, m/s", default=2620.0)
-    transverse = FloatField("Enter transverse speed of sound, m/s", default=1080.0)
-    density_of_scatter = FloatField("Enter density of scatterer, kg/m^3", default=1125.0)
 
     from_value_x = FloatField("Enter begin coordinate value", default=-0.02)
     to_value_x = FloatField("Enter end coordinate value", default=0.02)
@@ -86,6 +84,8 @@ class ScattererForm(FlaskForm):
         super(ScattererForm, self).__init__(*args, **kwargs)
         self.model_names = db.session.query(Model).all()
         self.model_name.choices = list(enumerate(set([x.name for x in self.model_names])))
+        self.materials = db.session.query(Scatterer).all()
+        self.material.choices = list(enumerate(set([x.name for x in self.materials])))
 
 
 # todo: rename

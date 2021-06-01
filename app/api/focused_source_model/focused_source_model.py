@@ -31,7 +31,7 @@ def focused_source_model():
         sio.savemat(model_path, {'P_ax': p_flat})
 
         params = {
-            "dx": float(form.spatial_step.data) / 100,
+            "dx": float(form.spatial_step.data) / 1000,
             "frequency": form.frequency.data * 1000000,
             "speed_of_sound": form.speed_of_sound_in_water.data,
             "density_of_medium": form.density_of_water.data,

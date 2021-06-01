@@ -7,6 +7,6 @@ from . import index
 from .focused_source_model import *
 from .model_results import *
 from .models import *
-from .load_model import *
-from .scatterer import *
+from .arbitrary_source_model import *
+from .calculations import *
 from .spherical_scatterer_params import *

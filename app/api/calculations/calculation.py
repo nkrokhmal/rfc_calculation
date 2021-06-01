@@ -1,6 +1,6 @@
 from flask import request, current_app, render_template
 import os
-from ...models import Model, ModelResult
+from ...models import Model, ModelResult, Scatterer
 from ... import db
 from ..forms import ScattererForm
 from .. import api
@@ -19,17 +19,18 @@ def create_arrange_with_endpoint(beg, end, step):
     return np.arange(beg, end + step, step)
 
 
-@api.route("/scatterer", methods=['GET', 'POST'])
+@api.route("/calculation", methods=['GET', 'POST'])
 def scatterer():
     form = ScattererForm()
     if request.method == 'POST' and form.validate_on_submit():
         cur_time = time.strftime('%Y%m%d%H%M%S')
         model = db.session.query(Model).filter(Model.name == get_choice_data(form.model_name)).first()
+        material = db.session.query(Scatterer).filter(Scatterer.name == get_choice_data(form.material)).first()
         obj = Object(
             a=form.radius.data,
-            rho=form.density_of_scatter.data,
-            c_l=form.longitudinal.data,
-            c_t=form.transverse.data
+            rho=material.density,
+            c_l=material.longitudinal_velocity,
+            c_t=material.shear_velocity
         )
         model_params = json.loads(model.params)
         wave = Wave(
@@ -61,9 +62,9 @@ def scatterer():
 
         scatterer_params = {
             'Radius': form.radius.data,
-            'LongitudinalSpeed': form.longitudinal.data,
-            'TransverseSpeed': form.transverse.data,
-            'DensityOfScatterer': form.density_of_scatter.data,
+            'LongitudinalSpeed': material.longitudinal_velocity,
+            'TransverseSpeed': material.shear_velocity,
+            'DensityOfScatterer': material.density,
             'Frequency': model_params['frequency'],
             'SpeedOfSound': model_params['speed_of_sound'],
             'DensityOfMedium': model_params['density_of_medium'],
@@ -88,6 +89,6 @@ def scatterer():
             status_id=1)
         db.session.add(model_result)
         db.session.commit()
-        return render_template('scatterer.html', form=form,
+        return render_template('calculations/calculation.html', form=form,
                                figure=figure_params)
-    return render_template('scatterer.html', form=form, figure=None)
+    return render_template('calculations/calculation.html', form=form, figure=None)
