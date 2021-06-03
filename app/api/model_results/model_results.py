@@ -3,6 +3,7 @@ from .. import api
 from ... import db
 from ...models import ModelResult, Model
 from ..forms import ModelResultsForm
+import json
 
 
 @api.route("/delete_model_result/<int:model_result_id>", methods=['DELETE'])
@@ -21,4 +22,7 @@ def get_model_result(id):
     model_results = db.session.query(ModelResult)\
         .filter(ModelResult.model_id == id)\
         .all()
+
+    for model_result in model_results:
+        model_result.model_params = json.loads(model_result.model_params)
     return render_template('get_model_result.html', model_results=model_results, model=model)

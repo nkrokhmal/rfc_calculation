@@ -19,5 +19,5 @@ manager.add_command("db", MigrateCommand)
 #         admin.add_view(ModelView(obj, db.session))
 
 if __name__ == '__main__':
-    # manager.run()
-    app.run(debug=True, port=5000, threaded=True, host='0.0.0.0')
+    manager.run()
+    # app.run(debug=True, port=5000, threaded=True, host='0.0.0.0')
