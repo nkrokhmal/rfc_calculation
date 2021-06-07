@@ -16,3 +16,4 @@ SQLAlchemy~=1.3.16
 flaskwebgui~=0.1.13
 alembic~=1.4.2
 plotly
+scipy
