@@ -11,58 +11,64 @@
             </div>
         </div>
     </div>
-    <form method="post" action="/arbitrary_source_model" class="mt-4">
+    <form method="post" action="/arbitrary_source_model" enctype="multipart/form-data" class="mt-4">
         {{ form.hidden_tag() }}
         <div class="row mb-4">
-            <div class="col-md-12 mb-3">
-                <div class="form-group">
-                    <label>Upload model file</label>
-                    {{form.input_file(place_holder='input_file', class='form-control')}}
-                </div>
-            </div>
-            <div class="col-md-12 mb-3">
-                <div class="form-group">
-                    <label>Enter model name</label>
-                    {{form.model_name(place_holder='model_name', class='form-control')}}
-                </div>
-            </div>
-            <div class="py-4">
-                <div class="d-flex justify-content-between w-100 flex-wrap">
-                    <div class="mb-3 mb-lg-0">
-                        <h1 class="h5">Wave parameters</h1>
+             <div class="col-12 col-xl-8 mb-4">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <div class="form-group">
+                            <label>Upload model file</label>
+                            {{form.input_file(place_holder='input_file', class='form-control')}}
+                        </div>
                     </div>
+                    <div class="col-md-12 mb-3">
+                        <div class="form-group">
+                            <label>Enter model name</label>
+                            {{form.model_name(place_holder='model_name', class='form-control')}}
+                        </div>
+                    </div>
+                    <div class="py-4">
+                        <div class="d-flex justify-content-between w-100 flex-wrap">
+                            <div class="mb-3 mb-lg-0">
+                                <h1 class="h5">Wave parameters</h1>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 mb-4">
+                        <div class="form-group">
+                            <label>Enter dx value</label>
+                            {{form.dxvalue(place_holder='dxvalue', class='form-control')}}
+                        </div>
+                        <div class="form-group">
+                            <label>Enter frequency</label>
+                            {{form.frequency(place_holder='frequency', class='form-control')}}
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 mb-4">
+                        <div class="form-group">
+                            <label>Enter speed of sound</label>
+                            {{form.speed_of_sound(place_holder='speed_of_sound', class='form-control')}}
+                        </div>
+                        <div class="form-group">
+                            <label>Enter density" </label>
+                            {{form.density_of_medium(place_holder='density_of_medium', class='form-control')}}
+                        </div>
+                    </div>
+                    <button type="submit" name="submit" class="btn btn-block btn-primary">Отправить</button>
                 </div>
+             </div>
+            <div class="col-12 col-xl-4 mb-4">
+                {% if figure %}
+                    <div class="row" >
+                        <div class="header-img">
+                            <img src= "{{ url_for('api.send_data', path=figure)}}" width="400" height="400">
+                        </div>
+                    </div>
+                {% endif %}
             </div>
-            <div class="col-lg-6 col-sm-6">
-                <div class="col-md-12 mb-3">
-                    <div class="form-group">
-                        <label>Enter dx value</label>
-                        {{form.dxvalue(place_holder='dxvalue', class='form-control')}}
-                    </div>
-                </div>
-                <div class="col-md-12 mb-3">
-                    <div class="form-group">
-                        <label>Enter frequency</label>
-                        {{form.frequency(place_holder='frequency', class='form-control')}}
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6 col-sm-6">
-                <div class="col-md-12 mb-3">
-                    <div class="form-group">
-                        <label>Enter speed of sound</label>
-                        {{form.speed_of_sound(place_holder='speed_of_sound', class='form-control')}}
-                    </div>
-                </div>
-                <div class="col-md-12 mb-3">
-                    <div class="form-group">
-                        <label>Enter density" </label>
-                        {{form.density_of_medium(place_holder='density_of_medium', class='form-control')}}
-                    </div>
-                </div>
-            </div>
-            <button type="submit" name="submit" class="btn btn-block btn-primary">Отправить</button>
         </div>
     </form>
 </div>
+
 {% endblock %}

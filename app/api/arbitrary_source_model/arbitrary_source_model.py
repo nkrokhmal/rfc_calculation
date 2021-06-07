@@ -8,12 +8,13 @@ from .show_model import show_model
 from datetime import datetime
 import io
 import json
+import flask
 
 
 @api.route('/arbitrary_source_model', methods=["GET", "POST"])
 def arbitrary_source_model():
     form = UploadModelForm()
-    if request.method == 'POST' and form.validate_on_submit():
+    if request.method == 'POST':
         model_name = form.model_name.data
         model_path = os.path.join(current_app.config['MODEL_PATH'], f'{model_name}.mat')
         distribution_path = os.path.join(current_app.config['DISTRIBUTION_PATH'], f'{model_name}.png')
@@ -27,7 +28,7 @@ def arbitrary_source_model():
                 'z_surf': 0,
             }
         )
-        file_bytes = io.BytesIO(request.files["input_file"].read())
+        file_bytes = io.BytesIO(flask.request.files["input_file"].read())
         figure = show_model(file_bytes, form.dxvalue.data)
         with open(distribution_path, 'wb') as file:
             file.write(figure.getbuffer())
