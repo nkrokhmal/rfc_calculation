@@ -84,6 +84,9 @@
 <script type="text/javascript">
 	$(function () {
 		$(".show-model-result").click(function () {
+
+			console.log($(".modal-content").html());
+			$(".modal-content").html('<div class="chart" id="bar_graph"></div>');
 			var graphs = $(this).data('image');
 			Plotly.plot("bar_graph", graphs,{});
 		})
